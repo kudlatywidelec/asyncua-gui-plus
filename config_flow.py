@@ -64,10 +64,19 @@ class AsyncuaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "unknown"
 
             if not errors:
-                # Create the config entry directly
+                # Create the config entry with empty entity lists
+                entry_data = {
+                    **user_input,
+                    "sensors": [],
+                    "binary_sensors": [],
+                    "switches": [],
+                    "covers": [],
+                    "lights": [],
+                    "climate": [],
+                }
                 return self.async_create_entry(
                     title=user_input[CONF_HUB_ID],
-                    data=user_input,
+                    data=entry_data,
                 )
 
         data_schema = vol.Schema(
