@@ -456,12 +456,39 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
         """Manage (edit/delete) existing entities."""
         if user_input is not None:
             action = user_input.get("action")
-            entity_type = user_input.get("entity_type")
-            entity_index = user_input.get("entity_index", -1)
+            entity_str = user_input.get("entity", "")
             
-            if action == "delete" and entity_index >= 0:
+            if not entity_str:
+                return self.async_abort(reason="user_aborted")
+            
+            # Parse entity_str format: "entity_type_idx"
+            parts = entity_str.rsplit("_", 1)
+            if len(parts) != 2:
+                return self.async_abort(reason="user_aborted")
+            
+            entity_type = parts[0]
+            try:
+                entity_index = int(parts[1])
+            except ValueError:
+                return self.async_abort(reason="user_aborted")
+            
+            # Map entity_type to key and step
+            type_mapping = {
+                "sensor": ("sensors", "edit_sensor"),
+                "binary_sensor": ("binary_sensors", "edit_binary_sensor"),
+                "switch": ("switches", "edit_switch"),
+                "cover": ("covers", "edit_cover"),
+                "light": ("lights", "edit_light"),
+                "climate": ("climate", "edit_climate"),
+            }
+            
+            if entity_type not in type_mapping:
+                return self.async_abort(reason="user_aborted")
+            
+            key, step_id = type_mapping[entity_type]
+            
+            if action == "delete":
                 # Delete entity
-                key = f"{entity_type}s"  # sensors, binary_sensors, switches, covers
                 entities = self._config_entry.data.get(key, [])
                 if 0 <= entity_index < len(entities):
                     entities.pop(entity_index)
@@ -471,6 +498,13 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
                     )
                     await self.hass.config_entries.async_reload(self._config_entry.entry_id)
                     return self.async_abort(reason="reconfigure_successful")
+            
+            elif action == "edit":
+                # Store entity info for edit step
+                self._entity_type = entity_type
+                self._entity_index = entity_index
+                self._entity_key = key
+                return await self.async_step_edit_entity()
             
             return self.async_abort(reason="user_aborted")
 
@@ -488,7 +522,7 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
         
         data_schema = vol.Schema(
             {
-                vol.Required("action"): vol.In(["delete"]),
+                vol.Required("action"): vol.In(["edit", "delete"]),
                 vol.Required("entity"): vol.In(dict(all_entities)),
             }
         )
@@ -499,4 +533,147 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
             description_placeholders={
                 "info": "Select an entity and action to perform"
             },
+        )
+
+    async def async_step_edit_entity(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Edit an existing entity."""
+        if not hasattr(self, "_entity_type"):
+            return self.async_abort(reason="user_aborted")
+        
+        entity_type = self._entity_type
+        entity_index = self._entity_index
+        entity_key = self._entity_key
+        
+        errors: dict[str, str] = {}
+        
+        # Get current entity data
+        entities = self._config_entry.data.get(entity_key, [])
+        if not (0 <= entity_index < len(entities)):
+            return self.async_abort(reason="user_aborted")
+        
+        current_entity = entities[entity_index]
+        
+        if user_input is not None:
+            # Validate node ID format
+            if not _validate_opc_ua_node_id(user_input.get("nodeid", "")):
+                errors["nodeid"] = "invalid_node_id"
+            
+            if not errors:
+                # Update entity based on type
+                if entity_type == "sensor":
+                    entities[entity_index] = {
+                        "name": user_input.get("sensor_name"),
+                        "nodeid": user_input.get("nodeid"),
+                        "device_class": user_input.get("device_class", ""),
+                        "state_class": user_input.get("state_class", "measurement"),
+                        "unit": user_input.get("unit", ""),
+                    }
+                elif entity_type == "binary_sensor":
+                    entities[entity_index] = {
+                        "name": user_input.get("name"),
+                        "nodeid": user_input.get("nodeid"),
+                        "device_class": user_input.get("device_class", ""),
+                    }
+                elif entity_type == "switch":
+                    entities[entity_index] = {
+                        "name": user_input.get("name"),
+                        "nodeid": user_input.get("nodeid"),
+                        "nodeid_switch_di": user_input.get("nodeid_switch_di", ""),
+                    }
+                elif entity_type == "cover":
+                    entities[entity_index] = {
+                        "name": user_input.get("name"),
+                        "nodeid": user_input.get("nodeid"),
+                        "travel_time": user_input.get("travel_time", 10),
+                        "fully_open_nodeid": user_input.get("fully_open_nodeid", ""),
+                        "fully_closed_nodeid": user_input.get("fully_closed_nodeid", ""),
+                    }
+                elif entity_type == "light":
+                    entities[entity_index] = {
+                        "name": user_input.get("name"),
+                        "nodeid": user_input.get("nodeid"),
+                        "brightness_nodeid": user_input.get("brightness_nodeid", ""),
+                    }
+                elif entity_type == "climate":
+                    entities[entity_index] = {
+                        "name": user_input.get("name"),
+                        "current_temperature_nodeid": user_input.get("current_temperature_nodeid", ""),
+                        "target_temperature_nodeid": user_input.get("target_temperature_nodeid", ""),
+                        "hvac_mode_nodeid": user_input.get("hvac_mode_nodeid", ""),
+                    }
+                
+                # Update config entry
+                self.hass.config_entries.async_update_entry(
+                    self._config_entry,
+                    data={**self._config_entry.data, entity_key: entities}
+                )
+                
+                # Reload entry
+                await self.hass.config_entries.async_reload(self._config_entry.entry_id)
+                
+                return self.async_abort(reason="reconfigure_successful")
+        
+        # Build schema based on entity type
+        if entity_type == "sensor":
+            data_schema = vol.Schema(
+                {
+                    vol.Required("sensor_name", default=current_entity.get("name")): cv.string,
+                    vol.Required("nodeid", default=current_entity.get("nodeid")): cv.string,
+                    vol.Optional("device_class", default=current_entity.get("device_class", "")): cv.string,
+                    vol.Optional("state_class", default=current_entity.get("state_class", "measurement")): cv.string,
+                    vol.Optional("unit", default=current_entity.get("unit", "")): cv.string,
+                }
+            )
+        elif entity_type == "binary_sensor":
+            data_schema = vol.Schema(
+                {
+                    vol.Required("name", default=current_entity.get("name")): cv.string,
+                    vol.Required("nodeid", default=current_entity.get("nodeid")): cv.string,
+                    vol.Optional("device_class", default=current_entity.get("device_class", "")): cv.string,
+                }
+            )
+        elif entity_type == "switch":
+            data_schema = vol.Schema(
+                {
+                    vol.Required("name", default=current_entity.get("name")): cv.string,
+                    vol.Required("nodeid", default=current_entity.get("nodeid")): cv.string,
+                    vol.Optional("nodeid_switch_di", default=current_entity.get("nodeid_switch_di", "")): cv.string,
+                }
+            )
+        elif entity_type == "cover":
+            data_schema = vol.Schema(
+                {
+                    vol.Required("name", default=current_entity.get("name")): cv.string,
+                    vol.Required("nodeid", default=current_entity.get("nodeid")): cv.string,
+                    vol.Optional("travel_time", default=current_entity.get("travel_time", 10)): cv.positive_int,
+                    vol.Optional("fully_open_nodeid", default=current_entity.get("fully_open_nodeid", "")): cv.string,
+                    vol.Optional("fully_closed_nodeid", default=current_entity.get("fully_closed_nodeid", "")): cv.string,
+                }
+            )
+        elif entity_type == "light":
+            data_schema = vol.Schema(
+                {
+                    vol.Required("name", default=current_entity.get("name")): cv.string,
+                    vol.Required("nodeid", default=current_entity.get("nodeid")): cv.string,
+                    vol.Optional("brightness_nodeid", default=current_entity.get("brightness_nodeid", "")): cv.string,
+                }
+            )
+        elif entity_type == "climate":
+            data_schema = vol.Schema(
+                {
+                    vol.Required("name", default=current_entity.get("name")): cv.string,
+                    vol.Optional("current_temperature_nodeid", default=current_entity.get("current_temperature_nodeid", "")): cv.string,
+                    vol.Optional("target_temperature_nodeid", default=current_entity.get("target_temperature_nodeid", "")): cv.string,
+                    vol.Optional("hvac_mode_nodeid", default=current_entity.get("hvac_mode_nodeid", "")): cv.string,
+                }
+            )
+        else:
+            return self.async_abort(reason="user_aborted")
+        
+        return self.async_show_form(
+            step_id="edit_entity",
+            data_schema=data_schema,
+            errors=errors,
         )

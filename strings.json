@@ -40,7 +40,7 @@
           "add_cover": "Add a new cover",
           "add_light": "Add a new light",
           "add_climate": "Add a new climate/thermostat",
-          "manage_entities": "Manage entities (delete)"
+          "manage_entities": "Edit or delete entities"
         }
       },
       "add_sensor": {
@@ -152,6 +152,26 @@
         "data": {
           "action": "Action",
           "entity": "Entity"
+        }
+      },
+      "edit_entity": {
+        "title": "Edit Entity",
+        "description": "Modify the selected entity configuration.",
+        "data": {
+          "name": "Name",
+          "sensor_name": "Sensor Name",
+          "nodeid": "Node ID",
+          "device_class": "Device Class (optional)",
+          "state_class": "State Class",
+          "unit": "Unit (optional)",
+          "nodeid_switch_di": "Readback Node ID (optional)",
+          "travel_time": "Travel Time (seconds)",
+          "fully_open_nodeid": "Fully Open Node (optional)",
+          "fully_closed_nodeid": "Fully Closed Node (optional)",
+          "brightness_nodeid": "Brightness Node (optional)",
+          "current_temperature_nodeid": "Current Temperature Node",
+          "target_temperature_nodeid": "Target Temperature Node",
+          "hvac_mode_nodeid": "HVAC Mode Node"
         }
       }
     }
