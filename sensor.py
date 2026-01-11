@@ -103,7 +103,7 @@ async def async_setup_entry(
             AsyncuaSensor(
                 coordinator=coordinator,
                 name=sensor.get("name"),
-                unique_id=sensor.get("unique_id") or f"{DOMAIN}.{hub_id}.{sensor.get('nodeid')}",
+                unique_id=sensor.get("unique_id") or sensor.get("nodeid"),
                 hub=hub_id,
                 node_id=sensor.get("nodeid"),
                 device_class=sensor.get("device_class"),
@@ -198,7 +198,7 @@ class AsyncuaSensor(CoordinatorEntity[AsyncuaCoordinator], SensorEntity):
         self._hub = hub
         self._node_id = node_id
         self._attr_unique_id = (
-            unique_id if unique_id is not None else f"{hub}_{node_id}"
+            unique_id if unique_id is not None else node_id
         )
         self._attr_available = False
         self._attr_native_unit_of_measurement = unit_of_measurement

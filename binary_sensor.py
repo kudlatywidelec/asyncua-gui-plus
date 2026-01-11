@@ -156,7 +156,7 @@ class AsyncuaBinarySensor(CoordinatorEntity[AsyncuaCoordinator], BinarySensorEnt
         self._hub = hub
         self._node_id = node_id
         self._attr_unique_id = (
-            unique_id if unique_id is not None else f"{hub}_{node_id}"
+            unique_id if unique_id is not None else node_id
         )
         self._attr_available = False
         self._attr_device_class = device_class

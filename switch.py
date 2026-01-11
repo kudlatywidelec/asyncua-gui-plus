@@ -147,7 +147,7 @@ class AsyncuaSwitch(SwitchEntity, CoordinatorEntity[AsyncuaCoordinator]):
         self._hub = hub
         self._node_id = node_id
         self._attr_unique_id = (
-            unique_id if unique_id is not None else f"{hub}_{node_id}"
+            unique_id if unique_id is not None else node_id
         )
         self._attr_available = STATE_UNAVAILABLE
         self._available = STATE_UNAVAILABLE
