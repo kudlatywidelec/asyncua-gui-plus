@@ -68,6 +68,11 @@ async def async_setup_entry(
 
     coordinator: AsyncuaCoordinator = hass.data[DOMAIN][hub_id]
 
+    # Store async_add_entities callback for dynamic entity addition
+    if not hasattr(coordinator, '_add_entities_callbacks'):
+        coordinator._add_entities_callbacks = {}
+    coordinator._add_entities_callbacks['binary_sensor'] = async_add_entities
+
     # Expect optional "binary_sensors" list in entry data
     sensors_cfg = config_entry.data.get("binary_sensors", [])
     if not sensors_cfg:

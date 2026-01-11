@@ -63,6 +63,12 @@ async def async_setup_entry(
         return
 
     coordinator = hass.data[DOMAIN][hub_id]
+    
+    # Store async_add_entities callback for dynamic entity addition
+    if not hasattr(coordinator, '_add_entities_callbacks'):
+        coordinator._add_entities_callbacks = {}
+    coordinator._add_entities_callbacks['climate'] = async_add_entities
+    
     asyncua_climate: list = []
 
     for climate in climate_data:

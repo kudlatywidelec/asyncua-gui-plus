@@ -89,11 +89,12 @@ async def async_setup_entry(
         return
 
     coordinator = hass.data[DOMAIN][hub_id]
-    asyncua_lights: list = []
-
-    for light in lights_data:
-        asyncua_lights.append(
-            AsyncuaLight(
+    
+    # Store async_add_entities callback for dynamic entity addition
+    if not hasattr(coordinator, '_add_entities_callbacks'):
+        coordinator._add_entities_callbacks = {}
+    coordinator._add_entities_callbacks['light'] = async_add_entities
+    
                 coordinator=coordinator,
                 name=light.get("name"),
                 unique_id=light.get("unique_id")

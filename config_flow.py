@@ -138,6 +138,107 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
         # AttributeError: property 'config_entry' has no setter.
         self._config_entry = config_entry
 
+    async def _add_entities_dynamically(self, entity_type: str, entity_data: dict) -> bool:
+        """Dynamically add entities without reloading the integration."""
+        try:
+            hub_id = self._config_entry.data.get("name") or self._config_entry.data.get(CONF_HUB_ID)
+            if not hub_id or hub_id not in self.hass.data.get(DOMAIN, {}):
+                _LOGGER.error(f"Hub {hub_id} not found for dynamic entity addition")
+                return False
+            
+            coordinator = self.hass.data[DOMAIN][hub_id]
+            
+            # Check if callback is available
+            if not hasattr(coordinator, '_add_entities_callbacks'):
+                _LOGGER.warning(f"No dynamic entity callbacks available for {entity_type}")
+                return False
+            
+            callback = coordinator._add_entities_callbacks.get(entity_type)
+            if not callback:
+                _LOGGER.warning(f"No callback for entity type {entity_type}")
+                return False
+            
+            # Create and add entity based on type
+            if entity_type == "sensor":
+                from .sensor import AsyncuaSensor
+                entity = AsyncuaSensor(
+                    coordinator=coordinator,
+                    name=entity_data.get("name"),
+                    unique_id=entity_data.get("unique_id") or entity_data.get("nodeid"),
+                    hub=hub_id,
+                    node_id=entity_data.get("nodeid"),
+                    device_class=entity_data.get("device_class"),
+                    state_class=entity_data.get("state_class", "measurement"),
+                    unit_of_measurement=entity_data.get("unit"),
+                )
+            elif entity_type == "binary_sensor":
+                from .binary_sensor import AsyncuaBinarySensor
+                entity = AsyncuaBinarySensor(
+                    coordinator=coordinator,
+                    name=entity_data.get("name"),
+                    hub=hub_id,
+                    node_id=entity_data.get("nodeid"),
+                    device_class=entity_data.get("device_class"),
+                    unique_id=entity_data.get("unique_id") or entity_data.get("nodeid"),
+                )
+            elif entity_type == "switch":
+                from .switch import AsyncuaSwitch
+                entity = AsyncuaSwitch(
+                    coordinator=coordinator,
+                    name=entity_data.get("name"),
+                    hub=hub_id,
+                    node_id=entity_data.get("nodeid"),
+                    addr_di=entity_data.get("nodeid_switch_di", ""),
+                    unique_id=entity_data.get("unique_id") or entity_data.get("nodeid"),
+                )
+            elif entity_type == "cover":
+                from .cover import AsyncuaCover
+                entity = AsyncuaCover(
+                    coordinator=coordinator,
+                    name=entity_data.get("name"),
+                    hub=hub_id,
+                    node_id=entity_data.get("nodeid"),
+                    travel_time=entity_data.get("travel_time", 10),
+                    fully_open_nodeid=entity_data.get("fully_open_nodeid", ""),
+                    fully_closed_nodeid=entity_data.get("fully_closed_nodeid", ""),
+                    unique_id=entity_data.get("unique_id") or entity_data.get("nodeid"),
+                )
+            elif entity_type == "light":
+                from .light import AsyncuaLight
+                entity = AsyncuaLight(
+                    coordinator=coordinator,
+                    name=entity_data.get("name"),
+                    hub=hub_id,
+                    node_id=entity_data.get("nodeid"),
+                    brightness_node_id=entity_data.get("brightness_nodeid", ""),
+                    unique_id=entity_data.get("unique_id") or entity_data.get("nodeid"),
+                )
+            elif entity_type == "climate":
+                from .climate import AsyncuaClimate
+                entity = AsyncuaClimate(
+                    coordinator=coordinator,
+                    name=entity_data.get("name"),
+                    hub=hub_id,
+                    current_temperature_node_id=entity_data.get("current_temperature_nodeid", ""),
+                    target_temperature_node_id=entity_data.get("target_temperature_nodeid", ""),
+                    hvac_mode_node_id=entity_data.get("hvac_mode_nodeid", ""),
+                    unique_id=entity_data.get("unique_id") or entity_data.get("nodeid"),
+                )
+            else:
+                _LOGGER.error(f"Unknown entity type: {entity_type}")
+                return False
+            
+            # Add entity via callback
+            callback([entity])
+            
+            # Update coordinator sensors list
+            coordinator.add_sensors([entity_data])
+            
+            return True
+        except Exception as e:
+            _LOGGER.error(f"Error adding entity dynamically: {e}", exc_info=True)
+            return False
+
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
@@ -171,14 +272,15 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
             
             if not errors:
                 # Add sensor to entry data
-                sensors = self._config_entry.data.get("sensors", [])
-                sensors.append({
+                new_sensor = {
                     "name": user_input.get("sensor_name"),
                     "nodeid": user_input.get("nodeid"),
                     "device_class": user_input.get("device_class", ""),
                     "state_class": user_input.get("state_class", "measurement"),
                     "unit": user_input.get("unit", ""),
-                })
+                }
+                sensors = self._config_entry.data.get("sensors", [])
+                sensors.append(new_sensor)
                 
                 # Update config entry
                 self.hass.config_entries.async_update_entry(
@@ -186,8 +288,9 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
                     data={**self._config_entry.data, "sensors": sensors}
                 )
                 
-                # Reload entry
-                await self.hass.config_entries.async_reload(self._config_entry.entry_id)
+                # Try dynamic addition, fallback to reload if it fails
+                if not await self._add_entities_dynamically("sensor", new_sensor):
+                    await self.hass.config_entries.async_reload(self._config_entry.entry_id)
                 
                 return self.async_abort(reason="reconfigure_successful")
 

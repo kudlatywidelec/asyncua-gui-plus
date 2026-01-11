@@ -62,6 +62,12 @@ async def async_setup_entry(
         return
 
     coordinator: AsyncuaCoordinator = hass.data[DOMAIN][hub_id]
+    
+    # Store async_add_entities callback for dynamic entity addition
+    if not hasattr(coordinator, '_add_entities_callbacks'):
+        coordinator._add_entities_callbacks = {}
+    coordinator._add_entities_callbacks['switch'] = async_add_entities
+    
     switches_cfg = config_entry.data.get("switches", [])
     if not switches_cfg:
         return

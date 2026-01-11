@@ -98,6 +98,12 @@ async def async_setup_entry(
         return
 
     coordinator: AsyncuaCoordinator = hass.data[DOMAIN][hub_id]
+    
+    # Store async_add_entities callback for dynamic entity addition
+    if not hasattr(coordinator, '_add_entities_callbacks'):
+        coordinator._add_entities_callbacks = {}
+    coordinator._add_entities_callbacks['cover'] = async_add_entities
+    
     covers_cfg = config_entry.data.get("covers", [])
     if not covers_cfg:
         return
