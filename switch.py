@@ -17,6 +17,7 @@ from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.device_registry import DeviceInfo
 
 from . import AsyncuaCoordinator
 from .const import (
@@ -161,6 +162,17 @@ class AsyncuaSwitch(SwitchEntity, CoordinatorEntity[AsyncuaCoordinator]):
     def attr_name(self):
         """Return __attr_name variable."""
         return self._attr_name
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device information about this entity."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._hub)},
+            name=self._hub,
+            manufacturer=self.coordinator.hub.device_info.get("manufacturer", "OPC-UA"),
+            model=self.coordinator.hub.device_info.get("model", "Server"),
+            configuration_url=self.coordinator.hub.device_info.get("configuration_url"),
+        )
 
     @property
     def is_on(self) -> bool | None:

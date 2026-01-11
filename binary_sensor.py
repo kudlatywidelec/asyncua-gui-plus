@@ -18,6 +18,7 @@ from homeassistant.helpers.typing import (
     DiscoveryInfoType,
 )
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.device_registry import DeviceInfo
 
 from . import AsyncuaCoordinator
 from .const import (
@@ -176,6 +177,17 @@ class AsyncuaBinarySensor(CoordinatorEntity[AsyncuaCoordinator], BinarySensorEnt
     def unique_id(self) -> str | None:
         """Return the unique_id of the sensor."""
         return self._attr_unique_id
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device information about this entity."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._hub)},
+            name=self._hub,
+            manufacturer=self.coordinator.hub.device_info.get("manufacturer", "OPC-UA"),
+            model=self.coordinator.hub.device_info.get("model", "Server"),
+            configuration_url=self.coordinator.hub.device_info.get("configuration_url"),
+        )
 
     @property
     def node_id(self) -> str:
