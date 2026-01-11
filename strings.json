@@ -1,0 +1,159 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Asyncua OPC-UA Hub",
+        "description": "Configure a connection to an OPC-UA server. Example URL: opc.tcp://192.168.1.100:4840",
+        "data": {
+          "name": "Hub Name",
+          "url": "Server URL",
+          "manufacturer": "Manufacturer (optional)",
+          "model": "Model (optional)",
+          "username": "Username (optional)",
+          "password": "Password (optional)",
+          "scan_interval": "Scan Interval (seconds)"
+        },
+        "data_description": {
+          "url": "OPC-UA server address (e.g., opc.tcp://192.168.1.100:4840)",
+          "scan_interval": "How often to update sensor values (default: 30 seconds)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to OPC-UA server",
+      "unknown": "Unknown error occurred",
+      "invalid_node_id": "Invalid OPC-UA node ID format. Use ns=X;s=... or ns=X;i=... (e.g., ns=2;s=MyVariable)"
+    },
+    "abort": {
+      "already_configured": "Hub already configured",
+      "reconfigure_successful": "Sensor added successfully"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "menu_options": {
+          "add_sensor": "Add a new sensor",
+          "add_binary_sensor": "Add a new binary sensor",
+          "add_switch": "Add a new switch",
+          "add_cover": "Add a new cover",
+          "add_light": "Add a new light",
+          "add_climate": "Add a new climate/thermostat"
+        }
+      },
+      "add_sensor": {
+        "title": "Add OPC-UA Sensor",
+        "description": "Add a new sensor to monitor an OPC-UA node.",
+        "data": {
+          "sensor_name": "Sensor Name",
+          "nodeid": "Node ID",
+          "device_class": "Device Class (optional)",
+          "state_class": "State Class",
+          "unit": "Unit of Measurement (optional)"
+        },
+        "data_description": {
+          "nodeid": "OPC-UA Node ID (e.g., ns=2;s=variable or ns=1;i=12345)",
+          "device_class": "Home Assistant device class (e.g., temperature, humidity, pressure)",
+          "state_class": "State class for graphs (measurement, total, etc.)",
+          "unit": "Unit of measurement (e.g., °C, %, hPa)"
+        }
+      }
+      ,
+      "add_binary_sensor": {
+        "title": "Add OPC-UA Binary Sensor",
+        "description": "Add a new binary sensor to monitor an OPC-UA node.",
+        "data": {
+          "name": "Binary Sensor Name",
+          "nodeid": "Node ID",
+          "device_class": "Device Class (optional)"
+        },
+        "data_description": {
+          "nodeid": "OPC-UA Node ID (e.g., ns=2;s=door_open)",
+          "device_class": "Home Assistant device class (e.g., door, window, motion)"
+        }
+      },
+      "add_switch": {
+        "title": "Add OPC-UA Switch",
+        "description": "Add a new switch to control an OPC-UA node.",
+        "data": {
+          "name": "Switch Name",
+          "nodeid": "Node ID (write)",
+          "nodeid_switch_di": "Node ID (readback, optional)"
+        },
+        "data_description": {
+          "nodeid": "OPC-UA node to write True/False",
+          "nodeid_switch_di": "Optional node to read the current state"
+        }
+      },
+      "add_cover": {
+        "title": "Add OPC-UA Cover",
+        "description": "Add a new cover (roller shutter) controlled via OPC-UA.",
+        "data": {
+          "name": "Cover Name",
+          "nodeid": "Position node (ID)",
+          "open_nodeid": "Open command node",
+          "close_nodeid": "Close command node",
+          "stop_nodeid": "Stop command node (optional)",
+          "fully_open_nodeid": "Fully open sensor (optional)",
+          "fully_closed_nodeid": "Fully closed sensor (optional)",
+          "travelling_time_down": "Travel time down (seconds)",
+          "travelling_time_up": "Travel time up (seconds)"
+        },
+        "data_description": {
+          "nodeid": "OPC-UA node providing position or ID",
+          "open_nodeid": "Command node set to True while opening",
+          "close_nodeid": "Command node set to True while closing",
+          "stop_nodeid": "Command node set to True to stop",
+          "fully_open_nodeid": "Binary sensor when fully open",
+          "fully_closed_nodeid": "Binary sensor when fully closed",
+          "travelling_time_down": "Time from fully open to fully closed",
+          "travelling_time_up": "Time from fully closed to fully open"
+        }
+      },
+      "add_light": {
+        "title": "Add OPC-UA Light",
+        "description": "Add a new light controlled via OPC-UA.",
+        "data": {
+          "name": "Light Name",
+          "nodeid": "Control node ID (on/off)",
+          "brightness_nodeid": "Brightness node ID (optional, 0-100)"
+        },
+        "data_description": {
+          "nodeid": "OPC-UA node to control light on/off",
+          "brightness_nodeid": "Optional node for brightness control (0-100 scale)"
+        }
+      },
+      "add_climate": {
+        "title": "Add OPC-UA Climate/Thermostat",
+        "description": "Add a new climate entity for temperature control.",
+        "data": {
+          "name": "Climate Name",
+          "current_temp_nodeid": "Current temperature node",
+          "target_temp_nodeid": "Target temperature node",
+          "hvac_mode_nodeid": "HVAC mode node (optional)",
+          "preset_mode_nodeid": "Preset mode node (optional)",
+          "min_temp": "Minimum temperature (°C)",
+          "max_temp": "Maximum temperature (°C)"
+        },
+        "data_description": {
+          "current_temp_nodeid": "Node reading current room temperature",
+          "target_temp_nodeid": "Node for setting target temperature",
+          "hvac_mode_nodeid": "Node for HVAC mode (0=off, 1=heat, 2=cool, 3=auto)",
+          "preset_mode_nodeid": "Node for preset modes",
+          "min_temp": "Minimum allowed temperature setting",
+          "max_temp": "Maximum allowed temperature setting"
+        }
+      },
+      "manage_entities": {
+        "title": "Manage Entities",
+        "description": "Delete or modify existing sensors, binary sensors, switches, or covers.",
+        "data": {
+          "action": "Action",
+          "entity": "Entity"
+        }
+      }
+    }
+  }
+}
+

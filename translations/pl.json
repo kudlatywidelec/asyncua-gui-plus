@@ -1,0 +1,83 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Hub OPC-UA Asyncua",
+        "description": "Skonfiguruj połączenie z serwerem OPC-UA. Przykład URL: opc.tcp://192.168.1.100:4840",
+        "data": {
+          "name": "Nazwa Huba",
+          "url": "Adres Serwera",
+          "manufacturer": "Producent (opcjonalnie)",
+          "model": "Model (opcjonalnie)",
+          "username": "Nazwa użytkownika (opcjonalnie)",
+          "password": "Hasło (opcjonalnie)",
+          "scan_interval": "Interwał Skanowania (sekundy)"
+        },
+        "data_description": {
+          "name": "Unikalna nazwa do identyfikacji tego huba w Home Assistant. Używana w konfiguracji czujników i przełączników.",
+          "url": "Adres serwera OPC-UA w formacie opc.tcp://host:port. Przykład: opc.tcp://192.168.1.100:4840 lub opc.tcp://moj-serwer.local:4840",
+          "manufacturer": "Producent urządzenia (np. Siemens, Beckhoff, Phoenix Contact). Opcjonalnie, tylko dla informacji.",
+          "model": "Model lub wersja urządzenia (np. S7-1200, CX5xxx). Opcjonalnie, tylko dla informacji.",
+          "username": "Nazwa użytkownika do logowania na serwerze OPC-UA (jeśli serwer wymaga uwierzytelnienia).",
+          "password": "Hasło do logowania (jeśli serwer wymaga uwierzytelnienia). Będzie przechowywane w bezpieczny sposób.",
+          "scan_interval": "Jak często aktualizować wartości czujników w sekundach. Domyślnie: 30 sekund. Wartości mniejsze = szybsza odpowiedź, większa obciążenie sieci."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Nie udało się połączyć z serwerem OPC-UA. Sprawdź adres URL, port i czy serwer jest dostępny.",
+      "unknown": "Nieznany błąd"
+    },
+    "abort": {
+      "already_configured": "Ten hub OPC-UA jest już skonfigurowany w Home Assistant",
+      "reconfigure_successful": "Czujnik został pomyślnie dodany"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opcje",
+        "menu_options": {
+          "add_sensor": "Dodaj nowy czujnik"
+        }
+      },
+      "add_sensor": {
+        "title": "Dodaj Czujnik OPC-UA",
+        "description": "Dodaj nowy czujnik do monitorowania węzła OPC-UA.",
+        "data": {
+          "sensor_name": "Nazwa Czujnika",
+          "nodeid": "Identyfikator Węzła",
+          "device_class": "Klasa Urządzenia (opcjonalnie)",
+          "state_class": "Klasa Stanu",
+          "unit": "Jednostka Pomiaru (opcjonalnie)"
+        },
+        "data_description": {
+          "nodeid": "Identyfikator węzła OPC-UA (np. ns=2;s=zmienna lub ns=1;i=12345)",
+          "device_class": "Klasa Home Assistant (np. temperature, humidity, pressure)",
+          "state_class": "Klasa do wykresu (measurement, total, itp.)",
+          "unit": "Jednostka pomiaru (np. °C, %, hPa)"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_value": {
+      "name": "ustaw wartość",
+      "description": "Zapisz wartość do węzła OPCUA.",
+      "fields": {
+        "hub": {
+          "name": "hub",
+          "description": "Nazwa huba OPCUA węzła skonfigurowanego w sekcji asyncua."
+        },
+        "nodeid": {
+          "name": "identyfikator węzła",
+          "description": "Identyfikator węzła (NodeID) do zapisu. Format: ns=2;s=zmienna lub ns=1;i=12345"
+        },
+        "value": {
+          "name": "wartość",
+          "description": "Wartość do zapisu. Może być typu: liczba całkowita (int), liczba zmiennoprzecinkowa (float), wartość logiczna (true/false), tekst (string), bajt (byte)."
+        }
+      }
+    }
+  }
+}
