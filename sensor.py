@@ -123,6 +123,7 @@ async def async_setup_entry(
     if asyncua_sensors:
         async_add_entities(new_entities=asyncua_sensors)
 
+    return True
 
 
 async def async_setup_platform(
@@ -224,12 +225,11 @@ class AsyncuaSensor(CoordinatorEntity[AsyncuaCoordinator], SensorEntity):
     @property
     def device_info(self) -> DeviceInfo:
         """Return device information about this entity."""
-        hub_device_info = self.coordinator.hub.device_info
         return DeviceInfo(
             identifiers={(DOMAIN, self._hub)},
             name=self._hub,
-            manufacturer=hub_device_info.manufacturer or "OPC-UA",
-            model=hub_device_info.model or "Server",
+            manufacturer="OPC-UA",
+            model="Server",
         )
 
     @property

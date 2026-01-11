@@ -89,6 +89,8 @@ async def async_setup_entry(
     if entities:
         async_add_entities(entities)
 
+    return True
+
 
 async def async_setup_platform(
     hass: HomeAssistant,
@@ -172,12 +174,11 @@ class AsyncuaSwitch(SwitchEntity, CoordinatorEntity[AsyncuaCoordinator]):
     @property
     def device_info(self) -> DeviceInfo:
         """Return device information about this entity."""
-        hub_device_info = self.coordinator.hub.device_info
         return DeviceInfo(
             identifiers={(DOMAIN, self._hub)},
             name=self._hub,
-            manufacturer=hub_device_info.manufacturer or "OPC-UA",
-            model=hub_device_info.model or "Server",
+            manufacturer="OPC-UA",
+            model="Server",
         )
 
     @property

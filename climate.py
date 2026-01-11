@@ -93,6 +93,8 @@ async def async_setup_entry(
     if asyncua_climate:
         async_add_entities(new_entities=asyncua_climate)
 
+    return True
+
 
 class AsyncuaClimate(CoordinatorEntity[AsyncuaCoordinator], ClimateEntity):
     """A climate implementation for Asyncua OPCUA nodes."""
@@ -151,12 +153,11 @@ class AsyncuaClimate(CoordinatorEntity[AsyncuaCoordinator], ClimateEntity):
     @property
     def device_info(self) -> DeviceInfo:
         """Return device information about this entity."""
-        hub_device_info = self.coordinator.hub.device_info
         return DeviceInfo(
             identifiers={(DOMAIN, self._hub)},
             name=self._hub,
-            manufacturer=hub_device_info.manufacturer or "OPC-UA",
-            model=hub_device_info.model or "Server",
+            manufacturer="OPC-UA",
+            model="Server",
         )
 
     @property
