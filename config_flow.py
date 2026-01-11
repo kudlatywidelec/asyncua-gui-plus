@@ -325,18 +325,20 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
                 errors["nodeid"] = "invalid_node_id"
             
             if not errors:
-                sensors = self._config_entry.data.get("binary_sensors", [])
-                sensors.append({
+                new_sensor = {
                     "name": user_input.get("name"),
                     "nodeid": user_input.get("nodeid"),
                     "device_class": user_input.get("device_class", ""),
                     "hub": self._config_entry.data.get("name"),
-                })
+                }
+                sensors = self._config_entry.data.get("binary_sensors", [])
+                sensors.append(new_sensor)
                 self.hass.config_entries.async_update_entry(
                     self._config_entry,
                     data={**self._config_entry.data, "binary_sensors": sensors}
                 )
-                await self.hass.config_entries.async_reload(self._config_entry.entry_id)
+                if not await self._add_entities_dynamically("binary_sensor", new_sensor):
+                    await self.hass.config_entries.async_reload(self._config_entry.entry_id)
                 return self.async_abort(reason="reconfigure_successful")
 
         data_schema = vol.Schema(
@@ -369,18 +371,20 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
                 errors["nodeid_switch_di"] = "invalid_node_id"
             
             if not errors:
-                switches = self._config_entry.data.get("switches", [])
-                switches.append({
+                new_switch = {
                     "name": user_input.get("name"),
                     "nodeid": user_input.get("nodeid"),
                     "nodeid_switch_di": user_input.get("nodeid_switch_di", ""),
                     "hub": self._config_entry.data.get("name"),
-                })
+                }
+                switches = self._config_entry.data.get("switches", [])
+                switches.append(new_switch)
                 self.hass.config_entries.async_update_entry(
                     self._config_entry,
                     data={**self._config_entry.data, "switches": switches}
                 )
-                await self.hass.config_entries.async_reload(self._config_entry.entry_id)
+                if not await self._add_entities_dynamically("switch", new_switch):
+                    await self.hass.config_entries.async_reload(self._config_entry.entry_id)
                 return self.async_abort(reason="reconfigure_successful")
 
         data_schema = vol.Schema(
@@ -413,8 +417,7 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
                     errors[field] = "invalid_node_id"
             
             if not errors:
-                covers = self._config_entry.data.get("covers", [])
-                covers.append({
+                new_cover = {
                     "name": user_input.get("name"),
                     "hub": self._config_entry.data.get("name"),
                     "nodeid": user_input.get("nodeid"),
@@ -425,12 +428,15 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
                     "stop_nodeid": user_input.get("stop_nodeid"),
                     "fully_open_nodeid": user_input.get("fully_open_nodeid"),
                     "fully_closed_nodeid": user_input.get("fully_closed_nodeid"),
-                })
+                }
+                covers = self._config_entry.data.get("covers", [])
+                covers.append(new_cover)
                 self.hass.config_entries.async_update_entry(
                     self._config_entry,
                     data={**self._config_entry.data, "covers": covers}
                 )
-                await self.hass.config_entries.async_reload(self._config_entry.entry_id)
+                if not await self._add_entities_dynamically("cover", new_cover):
+                    await self.hass.config_entries.async_reload(self._config_entry.entry_id)
                 return self.async_abort(reason="reconfigure_successful")
 
         data_schema = vol.Schema(
@@ -480,7 +486,14 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
                     self._config_entry,
                     data={**self._config_entry.data, "lights": lights}
                 )
-                await self.hass.config_entries.async_reload(self._config_entry.entry_id)
+                new_light = {
+                    "name": user_input.get("name"),
+                    "hub": self._config_entry.data.get("name"),
+                    "nodeid": user_input.get("nodeid"),
+                    "brightness_nodeid": user_input.get("brightness_nodeid"),
+                }
+                if not await self._add_entities_dynamically("light", new_light):
+                    await self.hass.config_entries.async_reload(self._config_entry.entry_id)
                 return self.async_abort(reason="reconfigure_successful")
 
         data_schema = vol.Schema(
@@ -529,7 +542,18 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
                     self._config_entry,
                     data={**self._config_entry.data, "climate": climate}
                 )
-                await self.hass.config_entries.async_reload(self._config_entry.entry_id)
+                new_climate = {
+                    "name": user_input.get("name"),
+                    "hub": self._config_entry.data.get("name"),
+                    "current_temperature_nodeid": user_input.get("current_temp_nodeid"),
+                    "target_temperature_nodeid": user_input.get("target_temp_nodeid"),
+                    "hvac_mode_nodeid": user_input.get("hvac_mode_nodeid"),
+                    "preset_mode_nodeid": user_input.get("preset_mode_nodeid"),
+                    "min_temp": user_input.get("min_temp", 5),
+                    "max_temp": user_input.get("max_temp", 35),
+                }
+                if not await self._add_entities_dynamically("climate", new_climate):
+                    await self.hass.config_entries.async_reload(self._config_entry.entry_id)
                 return self.async_abort(reason="reconfigure_successful")
 
         data_schema = vol.Schema(
@@ -599,7 +623,13 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
                         self._config_entry,
                         data={**self._config_entry.data, key: entities}
                     )
-                    await self.hass.config_entries.async_reload(self._config_entry.entry_id)
+                    # Try dynamic removal, fallback to reload
+                    try:
+                        coordinator = self.hass.data[DOMAIN][self._config_entry.data.get("name")]
+                        # Reload to remove entity from registry
+                        await self.hass.config_entries.async_reload(self._config_entry.entry_id)
+                    except Exception:
+                        await self.hass.config_entries.async_reload(self._config_entry.entry_id)
                     return self.async_abort(reason="reconfigure_successful")
             
             elif action == "edit":
@@ -713,8 +743,9 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
                     data={**self._config_entry.data, entity_key: entities}
                 )
                 
-                # Reload entry
-                await self.hass.config_entries.async_reload(self._config_entry.entry_id)
+                # Try dynamic update, fallback to reload
+                if not await self._add_entities_dynamically(entity_type, entities[entity_index]):
+                    await self.hass.config_entries.async_reload(self._config_entry.entry_id)
                 
                 return self.async_abort(reason="reconfigure_successful")
         
