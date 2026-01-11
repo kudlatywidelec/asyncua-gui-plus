@@ -203,7 +203,6 @@ class AsyncuaLight(CoordinatorEntity[AsyncuaCoordinator], LightEntity):
             name=self._hub,
             manufacturer=self.coordinator.hub.device_info.get("manufacturer", "OPC-UA"),
             model=self.coordinator.hub.device_info.get("model", "Server"),
-            configuration_url=self.coordinator.hub.device_info.get("configuration_url"),
         )
 
     @property
