@@ -29,7 +29,8 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 # OPC-UA node ID pattern: ns=X;s=... or ns=X;i=...
-OPC_UA_NODE_ID_PATTERN = re.compile(r'^ns=\d+;[si]=[a-zA-Z0-9_\-\.:/]+$')
+# Supports alphanumeric, underscores, hyphens, dots, colons, slashes, and square brackets (for array indexing)
+OPC_UA_NODE_ID_PATTERN = re.compile(r'^ns=\d+;[si]=[a-zA-Z0-9_\-\.:/\[\]]+$')
 
 
 def _validate_opc_ua_node_id(node_id: str) -> bool:
