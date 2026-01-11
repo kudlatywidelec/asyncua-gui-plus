@@ -80,13 +80,6 @@ async def async_setup_entry(
         _LOGGER.warning(f"Hub ID not found in config entry")
         return
     
-    # Get sensors from stored config entry data (OptionsFlow stores here)
-    sensors_data = config_entry.data.get("sensors", [])
-    
-    if not sensors_data:
-        # No sensors to add from config entry
-        return
-    
     if hub_id not in hass.data[DOMAIN]:
         _LOGGER.error(f"Asyncua hub {hub_id} not found")
         return
@@ -94,9 +87,18 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][hub_id]
     
     # Store async_add_entities callback for dynamic entity addition
+    # This is CRITICAL - must be done even if no sensors exist yet
     if not hasattr(coordinator, '_add_entities_callbacks'):
         coordinator._add_entities_callbacks = {}
     coordinator._add_entities_callbacks['sensor'] = async_add_entities
+    
+    # Get sensors from stored config entry data (OptionsFlow stores here)
+    sensors_data = config_entry.data.get("sensors", [])
+    
+    if not sensors_data:
+        # No sensors to add from config entry initially
+        # But callback is registered for dynamic addition later
+        return
     
     asyncua_sensors: list = []
     
@@ -109,7 +111,7 @@ async def async_setup_entry(
             AsyncuaSensor(
                 coordinator=coordinator,
                 name=sensor.get("name"),
-                unique_id=sensor.get("unique_id") or sensor.get("nodeid"),
+                unique_id=sensor.get("nodeid"),
                 hub=hub_id,
                 node_id=sensor.get("nodeid"),
                 device_class=sensor.get("device_class"),

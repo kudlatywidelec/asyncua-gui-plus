@@ -242,21 +242,18 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Manage the options."""
-        if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
-
+        """Manage the options - show menu with entity management options."""
         return self.async_show_menu(
             step_id="init",
-            menu_options=[
-                "add_sensor",
-                "add_binary_sensor",
-                "add_switch",
-                "add_cover",
-                "add_light",
-                "add_climate",
-                "manage_entities"
-            ],
+            menu_options={
+                "add_sensor": "Add a new sensor",
+                "add_binary_sensor": "Add a new binary sensor",
+                "add_switch": "Add a new switch",
+                "add_cover": "Add a new cover",
+                "add_light": "Add a new light",
+                "add_climate": "Add a new climate/thermostat",
+                "manage_entities": "Edit or delete entities"
+            },
         )
 
     async def async_step_add_sensor(

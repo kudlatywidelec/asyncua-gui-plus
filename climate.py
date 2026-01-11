@@ -53,11 +53,6 @@ async def async_setup_entry(
         _LOGGER.warning("Hub ID not found in config entry")
         return
 
-    climate_data = config_entry.data.get("climate", [])
-
-    if not climate_data:
-        return
-
     if hub_id not in hass.data[DOMAIN]:
         _LOGGER.error(f"Asyncua hub {hub_id} not found")
         return
@@ -65,9 +60,16 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][hub_id]
     
     # Store async_add_entities callback for dynamic entity addition
+    # MUST be done BEFORE returning, even if no climates exist
     if not hasattr(coordinator, '_add_entities_callbacks'):
         coordinator._add_entities_callbacks = {}
     coordinator._add_entities_callbacks['climate'] = async_add_entities
+    
+    climate_data = config_entry.data.get("climate", [])
+
+    if not climate_data:
+        # No climate to add initially, but callback is registered
+        return
     
     asyncua_climate: list = []
 
