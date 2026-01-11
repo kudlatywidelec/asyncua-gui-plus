@@ -172,11 +172,12 @@ class AsyncuaSwitch(SwitchEntity, CoordinatorEntity[AsyncuaCoordinator]):
     @property
     def device_info(self) -> DeviceInfo:
         """Return device information about this entity."""
+        hub_device_info = self.coordinator.hub.device_info
         return DeviceInfo(
             identifiers={(DOMAIN, self._hub)},
             name=self._hub,
-            manufacturer=self.coordinator.hub.device_info.get("manufacturer", "OPC-UA"),
-            model=self.coordinator.hub.device_info.get("model", "Server"),
+            manufacturer=hub_device_info.manufacturer or "OPC-UA",
+            model=hub_device_info.model or "Server",
         )
 
     @property
