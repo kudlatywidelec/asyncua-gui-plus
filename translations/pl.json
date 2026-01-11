@@ -38,7 +38,13 @@
       "init": {
         "title": "Opcje",
         "menu_options": {
-          "add_sensor": "Dodaj nowy czujnik"
+          "add_sensor": "Dodaj nowy czujnik",
+          "add_binary_sensor": "Dodaj nowy czujnik binarny",
+          "add_switch": "Dodaj nowy przełącznik",
+          "add_cover": "Dodaj nową roletę/osłonę",
+          "add_light": "Dodaj nowe światło",
+          "add_climate": "Dodaj klimatyzację/termostat",
+          "manage_entities": "Zarządzaj jednostkami (usuń)"
         }
       },
       "add_sensor": {

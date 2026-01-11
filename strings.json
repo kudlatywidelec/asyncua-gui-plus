@@ -39,7 +39,8 @@
           "add_switch": "Add a new switch",
           "add_cover": "Add a new cover",
           "add_light": "Add a new light",
-          "add_climate": "Add a new climate/thermostat"
+          "add_climate": "Add a new climate/thermostat",
+          "manage_entities": "Manage entities (delete)"
         }
       },
       "add_sensor": {
