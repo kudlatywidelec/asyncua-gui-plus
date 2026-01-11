@@ -95,10 +95,15 @@ async def async_setup_entry(
         coordinator._add_entities_callbacks = {}
     coordinator._add_entities_callbacks['light'] = async_add_entities
     
+    asyncua_lights: list = []
+    
+    # Create lights from config entry
+    for light in lights_data:
+        asyncua_lights.append(
+            AsyncuaLight(
                 coordinator=coordinator,
                 name=light.get("name"),
-                unique_id=light.get("unique_id")
-                or f"{hub_id}_{light.get('nodeid')}",
+                unique_id=light.get("nodeid"),
                 hub=hub_id,
                 node_id=light.get("nodeid"),
                 brightness_node_id=light.get("brightness_nodeid"),
