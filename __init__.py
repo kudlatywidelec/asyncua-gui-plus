@@ -201,6 +201,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await coordinator.async_config_entry_first_refresh()
         
         hass.data[DOMAIN][hub_id] = coordinator
+    
+    # Initialize callback storage for dynamic entity addition
+    if not hasattr(coordinator, '_add_entities_callbacks'):
+        coordinator._add_entities_callbacks = {}
 
     # Forward setup to all platforms
     await hass.config_entries.async_forward_entry_setups(

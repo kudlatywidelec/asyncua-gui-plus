@@ -150,12 +150,12 @@ class AsyncuaOptionsFlow(config_entries.OptionsFlow):
             
             # Check if callback is available
             if not hasattr(coordinator, '_add_entities_callbacks'):
-                _LOGGER.warning(f"No dynamic entity callbacks available for {entity_type}")
+                _LOGGER.warning(f"No dynamic entity callbacks available for {entity_type}, triggering reload")
                 return False
             
             callback = coordinator._add_entities_callbacks.get(entity_type)
             if not callback:
-                _LOGGER.warning(f"No callback for entity type {entity_type}")
+                _LOGGER.warning(f"No callback registered for entity type {entity_type}, will trigger reload")
                 return False
             
             # Create and add entity based on type
