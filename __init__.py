@@ -173,36 +173,34 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not hub_id:
         raise ConfigEntryError("Hub ID not found in config entry")
     
+    # If hub already exists, just use existing coordinator
     if hub_id in hass.data[DOMAIN]:
-        raise ConfigEntryError(
-            f"Duplicated hub detected {hub_id}. "
-            f"OPCUA hub name must be unique."
-        )
-
-    coordinator = AsyncuaCoordinator(
-        hass=hass,
-        name=hub_id,
-        hub=OpcuaHub(
-            hub_name=hub_id,
-            hub_manufacturer=entry.data.get(CONF_HUB_MANUFACTURER, ""),
-            hub_model=entry.data.get(CONF_HUB_MODEL, ""),
-            hub_url=entry.data[CONF_HUB_URL],
-            username=entry.data.get(CONF_HUB_USERNAME),
-            password=entry.data.get(CONF_HUB_PASSWORD),
-        ),
-        update_interval_in_second=timedelta(
-            seconds=entry.data.get(
-                CONF_HUB_SCAN_INTERVAL,
-                DEFAULT_SCAN_INTERVAL,
+        coordinator = hass.data[DOMAIN][hub_id]
+    else:
+        coordinator = AsyncuaCoordinator(
+            hass=hass,
+            name=hub_id,
+            hub=OpcuaHub(
+                hub_name=hub_id,
+                hub_manufacturer=entry.data.get(CONF_HUB_MANUFACTURER, ""),
+                hub_model=entry.data.get(CONF_HUB_MODEL, ""),
+                hub_url=entry.data[CONF_HUB_URL],
+                username=entry.data.get(CONF_HUB_USERNAME),
+                password=entry.data.get(CONF_HUB_PASSWORD),
             ),
-        ),
-    )
-    
-    # This is the correct place to call async_config_entry_first_refresh
-    # because the entry is in SETUP_IN_PROGRESS state
-    await coordinator.async_config_entry_first_refresh()
-    
-    hass.data[DOMAIN][hub_id] = coordinator
+            update_interval_in_second=timedelta(
+                seconds=entry.data.get(
+                    CONF_HUB_SCAN_INTERVAL,
+                    DEFAULT_SCAN_INTERVAL,
+                ),
+            ),
+        )
+        
+        # This is the correct place to call async_config_entry_first_refresh
+        # because the entry is in SETUP_IN_PROGRESS state
+        await coordinator.async_config_entry_first_refresh()
+        
+        hass.data[DOMAIN][hub_id] = coordinator
 
     # Forward setup to all platforms
     await hass.config_entries.async_forward_entry_setups(
