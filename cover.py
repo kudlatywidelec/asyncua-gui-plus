@@ -208,7 +208,7 @@ async def async_setup_platform(
 class AsyncuaCover(CoordinatorEntity[AsyncuaCoordinator], CoverEntity, RestoreEntity):
     """A cover implementation for Asyncua OPCUA nodes."""
 
-    _attr_has_entity_name = True
+    _attr_has_entity_name = False
 
     def __init__(
         self,

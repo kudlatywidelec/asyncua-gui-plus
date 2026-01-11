@@ -158,7 +158,7 @@ async def async_setup_platform(
 class AsyncuaLight(CoordinatorEntity[AsyncuaCoordinator], LightEntity):
     """A light implementation for Asyncua OPCUA nodes."""
 
-    _attr_has_entity_name = True
+    _attr_has_entity_name = False
     _attr_color_mode = ColorMode.BRIGHTNESS
     _attr_supported_color_modes = {ColorMode.BRIGHTNESS, ColorMode.ONOFF}
     entity_description: AsyncuaLightEntityDescription

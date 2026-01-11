@@ -99,7 +99,7 @@ async def async_setup_entry(
 class AsyncuaClimate(CoordinatorEntity[AsyncuaCoordinator], ClimateEntity):
     """A climate implementation for Asyncua OPCUA nodes."""
 
-    _attr_has_entity_name = True
+    _attr_has_entity_name = False
     _attr_hvac_modes = [HVACMode.HEAT, HVACMode.COOL, HVACMode.HEAT_COOL, HVACMode.OFF]
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE

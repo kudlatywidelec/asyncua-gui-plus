@@ -176,7 +176,7 @@ async def async_setup_platform(
 class AsyncuaSensor(CoordinatorEntity[AsyncuaCoordinator], SensorEntity):
     """A sensor implementation for Asyncua OPCUA nodes."""
 
-    _attr_has_entity_name = True
+    _attr_has_entity_name = False
     entity_description: AsyncuaSensorEntityDescription
 
     def __init__(
