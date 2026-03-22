@@ -545,4 +545,4 @@ GET /api/states/sensor.asyncua_fully_open
 
 **Wersja dokumentacji:** 1.0  
 **Data:** 2026-01-11  
-**Kompatybilność:** Asyncua v0.1.2+
+**Kompatybilność:** asyncua>=1.1.8

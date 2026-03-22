@@ -292,7 +292,7 @@ This is useful for automation and manual control beyond the standard entity serv
 
 - **Minimum HA Version**: 2024.1+
 - **Python Version**: 3.11+
-- **Asyncua Library**: 1.0.2
+- **Asyncua Library**: >=1.1.8
 
 ## Credits
 
@@ -306,7 +306,7 @@ This integration uses the asyncua library (LGPL). See [LICENSE](LICENSE) for det
 ## Support & Issues
 
 Found a bug? Have a feature request?
-- GitHub Issues: https://github.com/KVSoong/asyncua/issues
+- GitHub Issues: https://github.com/kudlatywidelec/asyncua-gui-plus/issues
 - Home Assistant Community: https://community.home-assistant.io/
 
 ## Changelog
@@ -529,9 +529,9 @@ logger:
 
 ## Wymagania
 
-- Home Assistant 2021.1 lub nowsze
-- Python 3.8+
-- Biblioteka `asyncua` (automatycznie instalowana)
+- Home Assistant 2024.1 lub nowsze
+- Python 3.11+
+- Biblioteka `asyncua>=1.1.8` (automatycznie instalowana)
 
 ---
 
@@ -582,7 +582,7 @@ Aby zgłosić problem:
 1. Włącz debug logging
 2. Reprodukuj problem
 3. Zbierz logi
-4. Zgłoś na GitHub: [KVSoong/asyncua](https://github.com/KVSoong/asyncua/issues)
+4. Zgłoś na GitHub: [kudlatywidelec/asyncua-gui-plus](https://github.com/kudlatywidelec/asyncua-gui-plus/issues)
 
 ---
 

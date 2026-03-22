@@ -280,4 +280,4 @@ Tam znajdziesz:
 **Potrzebujesz pomocy?**
 - Logi: `Developer Tools → Logs`
 - Debugowanie: [COVER_CONFIGURATION.md - Troubleshooting](./COVER_CONFIGURATION.md#rozwiązywanie-problemów)
-- GitHub: [Issues](https://github.com/KVSoong/asyncua/issues)
+- GitHub: [Issues](https://github.com/kudlatywidelec/asyncua-gui-plus/issues)

@@ -18,6 +18,7 @@
 
 2. **Konfiguracja Projektu**
    - manifest.json zaktualizowany do wersji 1.0.0
+   - Wymaganie biblioteki: `asyncua>=1.1.8` (kompatybilność z Python 3.14)
    - LICENSE (MIT) dodany
    - Wszystkie platformy gotowe: sensor, binary_sensor, switch, cover, light, climate
 

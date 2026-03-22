@@ -157,7 +157,7 @@ Patrz [README.md](./README.md) - sekcja dokumentacji dla każdej platformy
    - Developer Tools → Services (testuj)
 
 3. **GitHub**
-   - Issues: [KVSoong/asyncua](https://github.com/KVSoong/asyncua/issues)
+   - Issues: [kudlatywidelec/asyncua-gui-plus](https://github.com/kudlatywidelec/asyncua-gui-plus/issues)
    - Załącz: konfigurację, logi, błędy
 
 ---
